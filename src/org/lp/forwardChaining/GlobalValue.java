@@ -57,18 +57,22 @@ public class GlobalValue {
 			num=0;
 		else 
 			num = cards.cards.size();
-		
-		if(memOrPlayer == computerTurn)
+			
+		if(memOrPlayer == computerTurn){
 			computerCardsLeft -= num;
-		else if(memOrPlayer == playerTurn)
+			
+		}
+		else if(memOrPlayer == playerTurn){
 			playerCardsLeft -= num;
+			System.out.println("player left:"+playerCardsLeft);
+		}
 		
 	}
 	
 	public void checkwin(){
-		if(computerCardsLeft == 0)
+		if(computerCardsLeft <= 0)
 			JOptionPane.showMessageDialog(null, "computer win!");
-		else if(playerCardsLeft == 0)
+		else if(playerCardsLeft <= 0)
 			JOptionPane.showMessageDialog(null, "player win!");
 	}
 	 

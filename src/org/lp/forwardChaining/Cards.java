@@ -11,15 +11,25 @@ public class Cards implements Comparable{
 	 ArrayList<Card> cards;
 	 float value;
 	 
+	 public int straightLenght;
+	 public int straightStart;
 	 public Cards() {
-		 type = CardsType.single;
+		 type = null;
 		 cards = new ArrayList<Card>();
 		 value = 0;
+		 
+		 straightLenght = 0;
+		 straightStart = 0;
 	 }
 	 
 	 public int compareTo(Object o){
 		 if(o == null) return 1;
-			return (int) (this.value - ((Cards)o).value);
+		 if(this.type!=((Cards)o).type){
+			 if(this.type == CardsType.four)
+				 return 1;
+		 }
+		 return (int) (this.value - ((Cards)o).value);
+		 
 	}
 	 
 	 public String toString(){

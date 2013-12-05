@@ -10,6 +10,8 @@ public class Memory extends Player implements Runnable{
 	Object lock;
 	GlobalValue gv = GlobalValue.getInstance();
 	
+	ArrayList<Cards> straights;
+	
 	public Memory(String name,Object lock) {
 		// TODO Auto-generated constructor stub
 		this.name = name;
@@ -19,6 +21,40 @@ public class Memory extends Player implements Runnable{
 	public void initialize(Table table){
 		this.table = table;
 	}
+	
+	public void analysisStraight(){
+		straights = new ArrayList<Cards>();
+		
+		for(int i=3;i<10;i++){
+			int num=0;
+			int j=i;
+			while(hands[j].count != 0 && j<14){
+				num++;
+				j++;
+			}
+			if(num > 4){
+				Cards cards = new Cards();
+				cards.straightLenght = num;
+				cards.straightStart = i;
+				cards.value = num*i + num*(num-1)/2;
+				int t = i;
+				for(int m=0;m<num;m++){
+					cards.cards.add(hands[t++].cards.get(0));
+				}
+				straights.add(cards);
+			}
+		}
+	}
+	
+	public Cards searchLargerStraight(Cards cards){
+		if(straights.isEmpty()) return null;
+		for(Cards cs : straights){
+			if((cs.straightLenght==cards.straightLenght)&&(cs.straightStart>cards.straightStart))
+				return cs;
+		}
+		return null;
+	}
+	
 	
 	public ArrayList<Cards> searchSingle() {
 		ArrayList<Cards> singleCards = new ArrayList<Cards>();
@@ -130,7 +166,7 @@ public class Memory extends Player implements Runnable{
 				
 			}
 			Cards candidate = null;
-			System.out.println(gv.getPlayerLastCards());
+//			System.out.println(gv.getPlayerLastCards());
 			if(gv.getPlayerLastCards() == null){
 				candidate = searchMin();
 			}else{
@@ -148,11 +184,16 @@ public class Memory extends Player implements Runnable{
 					}
 					case three:{
 						candidate = searchLarger(searchThree(), playerCards);
+						if(candidate == null)
+							candidate = searchLarger(searchFour(),playerCards);
 						break;
 					}
 					case four:{
 						candidate = searchLarger(searchFour(),playerCards);
 						break;
+					}
+					case straight:{
+						candidate = searchLargerStraight(playerCards);
 					}
 				}
 			}
@@ -160,11 +201,12 @@ public class Memory extends Player implements Runnable{
 			
 			try {
 				removeCardsFromBox(candidate);
-				gv.decreaseCardsNum(gv.computerTurn, candidate);
-				gv.checkwin();
-				gv.changeTurn();
 				table.updateCardsArea(this, candidate);
 				table.showCards(table.computerCardsField, this.hands);
+				gv.decreaseCardsNum(gv.computerTurn, candidate);
+				gv.checkwin();
+				analysisStraight();
+				gv.changeTurn();
 				synchronized (lock) {
 					lock.notifyAll();
 					lock.wait();

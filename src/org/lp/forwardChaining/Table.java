@@ -2,6 +2,7 @@ package org.lp.forwardChaining;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -45,6 +46,8 @@ public class Table extends JFrame{
 		this.computerMem = m;
 		this.lock = lock;
 		
+		Font font1 = new Font("宋体", Font.BOLD, 20);
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocation(500,100);
         setSize(800,900);
@@ -61,9 +64,10 @@ public class Table extends JFrame{
        complex.setSize(800, 600);
        computerCardsField.setPreferredSize(new Dimension(200,200));
        computerCardsField.setEditable(false);
-       
+       computerCardsField.setFont(font1);
 //       playerCardsField.setPreferredSize(new Dimension(700,200));
        playerCardsField.setEditable(false);
+       playerCardsField.setFont(font1);
        
 //       cardsAreaField.setPreferredSize(new Dimension(600,400));
        cardsAreaField.setEditable(false);
@@ -106,6 +110,9 @@ public class Table extends JFrame{
 					gv.setPlayerLastCards(cards);
 					showCards(playerCardsField,player.hands);
 					updateCardsArea(player, cards);
+					gv.decreaseCardsNum(gv.playerTurn, cards);
+					gv.checkwin();
+					cardsPlayField.setText("");
 					gv.changeTurn();
 					synchronized (lock) {
 						lock.notifyAll();
@@ -116,6 +123,7 @@ public class Table extends JFrame{
 					JOptionPane.showMessageDialog(null, "can not play like this.");
 					return;
 				}
+				
 				gv.setPlayerLastCards(cards);
 				showCards(playerCardsField,player.hands);
 				updateCardsArea(player, cards);
@@ -146,6 +154,7 @@ public class Table extends JFrame{
        
        player.analysisCards();
        computerMem.analysisCards();
+       computerMem.analysisStraight();
        
        showCards(playerCardsField, player.cards);
        showCards(computerCardsField, computerMem.cards);
@@ -233,6 +242,23 @@ public class Table extends JFrame{
 					return cards;
 				}
 			}
+		}else if((sArray.length<14)&&(sArray.length>4)){
+			int[] ids = new int[sArray.length];
+			ids[0] = getCardIDFromName(sArray[0]);
+			if(boxs[ids[0]].count == 0) return null;
+			for(int i=1;i<sArray.length;i++){
+				ids[i] = getCardIDFromName(sArray[i]);
+				if(boxs[ids[i]].count == 0) return null;
+				if(ids[i]!=(ids[i-1]+1)) return null;
+			}
+			cards.type = CardsType.straight;
+			cards.straightLenght = sArray.length;
+			cards.straightStart = ids[0];
+			cards.value = cards.straightLenght*cards.straightStart +cards.straightLenght*(cards.straightLenght-1)/2;
+			for(int i=0;i<sArray.length;i++){
+				cards.cards.add(boxs[ids[i]].cards.remove(0));
+			}
+			return cards;
 		}
 		
 		return null;
